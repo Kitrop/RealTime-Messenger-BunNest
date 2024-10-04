@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement()) // уникальный идентификатор пользователя
+  username  String    @unique // имя пользователя
+  email     String    @unique // email пользователя
+  password  String    // пароль пользователя
+  posts     Post[]    // список постов, созданных пользователем
+  messages  Message[] // сообщения, отправленные пользователем
+  chats     Chat[]    // чаты, в которых состоит пользователь
+  createdAt DateTime  @default(now()) // дата создания аккаунта
+  updatedAt DateTime  @updatedAt // автоматическое обновление даты изменения
+
+  // связь с участниками чатов
+  chatMembers ChatMember[]
+}
+
+model Post {
+  id        Int      @id @default(autoincrement()) // уникальный идентификатор поста
+  content   String   // содержание поста
+  author    User     @relation(fields: [authorId], references: [id]) // автор поста
+  authorId  Int      // ID автора поста
+  createdAt DateTime @default(now()) // дата создания поста
+  updatedAt DateTime @updatedAt // автоматическое обновление даты изменения
+}
+
+model Message {
+  id        Int      @id @default(autoincrement()) // уникальный идентификатор сообщения
+  content   String   // текст сообщения
+  sender    User     @relation(fields: [senderId], references: [id]) // отправитель сообщения
+  senderId  Int      // ID отправителя
+  chat      Chat     @relation(fields: [chatId], references: [id]) // чат, в котором отправлено сообщение
+  chatId    Int      // ID чата
+  createdAt DateTime @default(now()) // дата отправки сообщения
+}
+
+model Chat {
+  id        Int         @id @default(autoincrement()) // уникальный идентификатор чата
+  name      String?     // название чата (необязательное для личных чатов)
+  isGroup   Boolean     @default(false) // флаг, обозначающий групповую беседу
+  messages  Message[]   // сообщения в чате
+  members   ChatMember[] // участники чата
+  createdAt DateTime    @default(now()) // дата создания чата
+
+  User User[]
+}
+
+model ChatMember {
+  id      Int   @id @default(autoincrement()) // уникальный идентификатор участника чата
+  user    User  @relation(fields: [userId], references: [id]) // пользователь, участвующий в чате
+  userId  Int   // ID пользователя
+  chat    Chat  @relation(fields: [chatId], references: [id]) // чат, в котором участвует пользователь
+  chatId  Int   // ID чата
+  joinedAt DateTime @default(now()) // дата вступления в чат
+
+  @@unique([userId, chatId]) // уникальная комбинация участника и чата
+}
