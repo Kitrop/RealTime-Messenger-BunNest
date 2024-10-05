@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { Module } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { PrismaService } from 'src/prisma.service'
-import { NoAuthGuard } from './noAuth.guard'
-import { AuthGuard } from './auth.guard'
+import { PrismaService } from 'src/prisma.service.js'
+import AuthController from './auth.controller.js'
+import { AuthGuard } from './auth.guard.js'
+import { AuthService } from './auth.service.js'
+import { NoAuthGuard } from './noAuth.guard.js'
 
 @Module({
-  controllers: [AuthController],
-  providers: [AuthService, JwtService, PrismaService, NoAuthGuard, AuthGuard]
+	controllers: [AuthController],
+	providers: [AuthService, JwtService, PrismaService, NoAuthGuard, AuthGuard],
 })
 export class AuthModule {}

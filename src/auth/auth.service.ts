@@ -1,37 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { PrismaService } from 'src/prisma.service'
 import { compare, hash } from 'bcrypt'
+import { PrismaService } from 'src/prisma.service.js'
 
 @Injectable()
 export class AuthService {
-	constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly jwtService: JwtService,
+		private readonly prisma: PrismaService
+	) {}
 
-	checkUniq(email: string, username: string) {
-		const findByUsername = this.prisma.user.findUnique({ where: {
-			username
-		}})
-		
-		const findByEmail = this.prisma.user.findUnique({ where: {
-			username
-		}})
+	async checkUniq(email: string, username: string) {
+		const findByUsername = await this.prisma.user.findUnique({
+			where: {
+				username,
+			},
+		})
+
+		console.log(findByUsername)
+
+		const findByEmail = await this.prisma.user.findUnique({
+			where: {
+				username,
+			},
+		})
 
 		if (findByUsername) {
 			return {
 				statusCode: 400,
 				data: {
-					message: 'user with this username is already exist'
-				}
+					message: 'user with this username is already exist',
+				},
 			}
 		}
 
-		
 		if (findByEmail) {
 			return {
 				statusCode: 400,
 				data: {
-					message: 'user with this email is already exist'
-				}
+					message: 'user with this email is already exist',
+				},
 			}
 		}
 
@@ -39,7 +47,7 @@ export class AuthService {
 	}
 
 	async createUser(createUser: ICreateUser) {
-		const checkUniq = this.checkUniq(createUser.email, createUser.username)
+		const checkUniq = await this.checkUniq(createUser.email, createUser.username)
 
 		if (checkUniq !== true) {
 			return checkUniq
@@ -47,43 +55,46 @@ export class AuthService {
 
 		const hashPassword = await hash(createUser.password, 7)
 
-
 		const newUser = await this.prisma.user.create({
 			data: {
 				username: createUser.username,
 				email: createUser.email,
 				password: hashPassword,
-			}
+			},
 		})
 
-		const jwt = this.createJWT({ userID: newUser.id, username: newUser.username, email: newUser.email })
-	
+		const jwt = this.createJWT({
+			userID: newUser.id,
+			username: newUser.username,
+			email: newUser.email,
+		})
+
 		return {
 			statusCode: 201,
 			data: {
 				user: {
 					id: newUser.id,
 					username: newUser.username,
-					email: newUser.email
+					email: newUser.email,
 				},
-				accessToken: jwt
-			}
+				accessToken: jwt,
+			},
 		}
 	}
 
 	async loginUser(loginUser: ILoginUser) {
 		const findUser = await this.prisma.user.findUnique({
 			where: {
-				username: loginUser.username
-			}
+				username: loginUser.username,
+			},
 		})
 
 		if (!findUser) {
 			return {
 				statusCode: 404,
 				data: {
-					message: 'user not found'
-				}
+					message: 'user not found',
+				},
 			}
 		}
 
@@ -93,12 +104,16 @@ export class AuthService {
 			return {
 				statusCode: 400,
 				data: {
-					message: 'invalid password'
-				}
+					message: 'invalid password',
+				},
 			}
 		}
 
-		const jwt = this.createJWT({ userID: findUser.id, username: findUser.username, email: findUser.email })
+		const jwt = this.createJWT({
+			userID: findUser.id,
+			username: findUser.username,
+			email: findUser.email,
+		})
 
 		return {
 			statusCode: 200,
@@ -106,10 +121,10 @@ export class AuthService {
 				user: {
 					id: findUser.id,
 					username: findUser.username,
-					email: findUser.email
+					email: findUser.email,
 				},
-				accessToken: jwt
-			}
+				accessToken: jwt,
+			},
 		}
 	}
 
@@ -121,7 +136,7 @@ export class AuthService {
 		try {
 			this.jwtService.verify(jwt, { secret: 'secret' })
 			return true
-		} catch(e) {
+		} catch (e) {
 			return false
 		}
 	}
@@ -146,6 +161,6 @@ export interface ICreateUser {
 }
 
 export interface ILoginUser {
-	username: string,
+	username: string
 	password: string
 }
