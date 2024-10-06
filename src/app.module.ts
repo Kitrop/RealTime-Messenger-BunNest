@@ -1,15 +1,31 @@
 import { Module } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
+import { JwtModule, JwtService } from '@nestjs/jwt'
 import { AppController } from './app.controller.js'
 import { AppService } from './app.service.js'
 import AuthController from './auth/auth.controller.js'
 import { AuthModule } from './auth/auth.module.js'
 import { AuthService } from './auth/auth.service.js'
 import { PrismaService } from './prisma.service.js'
+import { ChatsModule } from './chats/chats.module';
+import { SocketModule } from './socket/socket.module';
+import { ChatsController } from './chats/chats.controller.js'
+import { ConfigModule } from '@nestjs/config'
+import { ChatsService } from './chats/chats.service.js'
 
 @Module({
-	imports: [AuthModule],
-	controllers: [AppController, AuthController],
-	providers: [AppService, PrismaService, JwtService, AuthService],
+	imports: [
+		ConfigModule.forRoot(), 
+		JwtModule.register({
+      secret: process.env.SECRET_KEY,
+      signOptions: {
+        expiresIn: '300h',
+      },
+    }),
+		AuthModule, 
+		ChatsModule, 
+		SocketModule, 
+	],
+	controllers: [AppController, AuthController, ChatsController],
+	providers: [AppService, PrismaService, JwtService, AuthService, ChatsService],
 })
 export class AppModule {}

@@ -146,6 +146,12 @@ export class AuthService {
 
 		return data
 	}
+
+	allUsers() {
+		const data = this.prisma.user.findMany()
+
+		return data
+	}
 }
 
 interface IPayload {

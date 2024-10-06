@@ -50,4 +50,9 @@ export default class AuthController {
 		res.clearCookie('accessToken')
 		res.status(204).send()
 	}
+
+	@Get('all')
+	all() {
+		return this.authService.allUsers()
+	}
 }
