@@ -1,46 +1,58 @@
-import { Get, Param } from '@nestjs/common'
+import { BadRequestException, Get, Param, Req, UseGuards } from '@nestjs/common'
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets'
 import type { Socket } from 'socket.io';
 import { Server } from 'socket.io';
-import type { PrismaService } from 'src/prisma.service'
+import { AuthGuard } from 'src/auth/auth.guard'
+import { PrismaService } from 'src/prisma.service'
+import { SocketService } from './socket.service'
+import { AccessGuard } from './access.guard'
+import type { Request } from 'express'
+import { JwtService } from '@nestjs/jwt'
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
   @WebSocketServer()
   server: Server;
 
-  // constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly socketService: SocketService, private readonly jwtService: JwtService) {}
 
   @SubscribeMessage('sendMessage')
+  @UseGuards(AuthGuard)
+  @UseGuards(AccessGuard)
   async handleMessage(
     @MessageBody() sendMessageDto: SendMessageSocket,
     @ConnectedSocket() client: Socket,
   ) {
-    // const message = await this.prisma.message.create({
-    //   data: {
-    //     content: sendMessageDto.content,
-    //     chatId: sendMessageDto.chatId,
-    //     senderId: sendMessageDto.senderId,
-    //   },
-    // });
+    const jwt = client.handshake.headers.cookie['accessToken']
 
-    // client
-		// 	.to(`chat_${sendMessageDto.chatId}`)
-		// 	.emit('newMessage', message);
-    return 'ok'
+    const message = this.socketService.createMessage(sendMessageDto)
+
+    client
+			.to(`chat_${sendMessageDto.chatId}`)
+			.emit('newMessage', message);
   }
 
-  // @Get('chats/:chatId/messages')
-  // async getChatMessages(@Param('chatId') chatId: string) {
-  //   return this.prisma.message.findMany({
-  //     where: { chatId: parseInt(chatId, 10) },
-  //     orderBy: { createdAt: 'asc' },
-  //   });
-  // }
+  @UseGuards(AuthGuard)
+  @Get('chats/:chatId/messages')
+  async getChatMessages(@Param('chatId') chatId: string, @Req() req: Request) {
+    const accessToken = req.cookies['accessToken']
+    const dataJwt = this.jwtService.decode(accessToken)
+    
+    const isAccess = this.socketService.isAccess(+chatId, dataJwt.id)
+
+    if (!isAccess) {
+      throw new BadRequestException('not access to chat')
+    }
+      
+    return this.prisma.message.findMany({
+      where: { chatId: parseInt(chatId, 10) },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
 }
 
 
-interface SendMessageSocket {
+export interface SendMessageSocket {
 	chatId: number,
 	content: string,
 	senderId: number
