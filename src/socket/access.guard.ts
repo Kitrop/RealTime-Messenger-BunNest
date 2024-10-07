@@ -13,6 +13,7 @@ export class AccessGuard implements CanActivate {
     const { senderId, chatId } = data
 
     const token = this.getTokenFromSocket(client)
+
     if (!token) {
       throw new UnauthorizedException('AccessToken is missing')
     }
@@ -46,7 +47,10 @@ export class AccessGuard implements CanActivate {
   }
 
   private getTokenFromSocket(client: Socket): string | null {
-    const cookies = client.handshake.headers.cookie;
+    const cookies = client.handshake.headers.cookie
+
+		console.log(client.handshake)
+
     if (cookies) {
       const parsedCookies = this.parseCookies(cookies);
       return parsedCookies['accessToken']

@@ -20,6 +20,11 @@ export class ChatsService {
 		});
 		return chat;
 	}
+
+	async allMessages() {
+		const data = await this.prisma.message.findMany()
+		return data
+	}
 }
 
 

@@ -8,6 +8,8 @@ import { SocketService } from './socket.service'
 import { AccessGuard } from './access.guard'
 import type { Request } from 'express'
 import { JwtService } from '@nestjs/jwt'
+import { log } from 'console'
+import { emit } from 'process'
 
 @WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
@@ -16,19 +18,29 @@ export class SocketController {
 
   constructor(private readonly prisma: PrismaService, private readonly socketService: SocketService, private readonly jwtService: JwtService) {}
 
-  @SubscribeMessage('sendMessage')
-  @UseGuards(AuthGuard)
-  @UseGuards(AccessGuard)
-  async handleMessage(
-    @MessageBody() sendMessageDto: SendMessageSocket,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const jwt = client.handshake.headers.cookie['accessToken']
+  handleConnection(client: Socket) {
+    console.log(`Client connected: ${client.id}`);
+    this.server.emit('message', 'Welcome to the chat!');
+  }
 
-    const message = this.socketService.createMessage(sendMessageDto)
+  handleDisconnect(client: Socket) {
+    console.log(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('sendMessage')
+  // @UseGuards(AuthGuard)
+  // @UseGuards(AccessGuard)
+  async handleMessage(@MessageBody() sendMessageDto: string, @ConnectedSocket() client: Socket) {
+
+    const dataFromBody = JSON.parse(sendMessageDto);
+    console.log(dataFromBody.senderId);
+    console.log(dataFromBody.chatId);
+    console.log(dataFromBody.content);
+    
+    const message = this.socketService.createMessage(dataFromBody)
 
     client
-			.to(`chat_${sendMessageDto.chatId}`)
+			.to(`chat_${dataFromBody.chatId}`)
 			.emit('newMessage', message);
   }
 
@@ -43,7 +55,7 @@ export class SocketController {
     if (!isAccess) {
       throw new BadRequestException('not access to chat')
     }
-      
+
     return this.prisma.message.findMany({
       where: { chatId: parseInt(chatId, 10) },
       orderBy: { createdAt: 'asc' },

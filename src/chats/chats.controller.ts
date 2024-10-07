@@ -1,4 +1,4 @@
-import { Body, Controller, InternalServerErrorException, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Post, Req } from '@nestjs/common';
 import { ChatsService, type CreateChatDto } from './chats.service'
 import type { Request } from 'express'
 
@@ -15,5 +15,11 @@ export class ChatsController {
 		}
 
 		return chat
+	}
+
+	@Get('all')
+	async all() {
+		const data = await this.chatService.allMessages()
+		return data
 	}
 }
