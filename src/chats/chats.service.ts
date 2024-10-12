@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt'
+import type { CreateChatDto, GetMessageDto } from 'src/dto/chat.dto'
 import { PrismaService } from 'src/prisma.service'
 
 @Injectable()
@@ -27,7 +28,7 @@ export class ChatsService {
 		return data
 	}
 
-	async getMessages(getMessage: getMessagesDto) {
+	async getMessages(getMessage: GetMessageDto) {
 		const dataJwt = this.jwtService.decode(getMessage.accessToken)
 		const isAccess = await this.isAccess(getMessage.chatId, dataJwt.id)
 
@@ -57,14 +58,4 @@ export class ChatsService {
 
 		return true
 	}
-}
-
-export interface getMessagesDto {
-	accessToken: string,
-	chatId: number,
-}
-
-export interface CreateChatDto {
-	name?: string
-	members: number[]
 }

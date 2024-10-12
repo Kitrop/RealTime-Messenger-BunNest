@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { compare, hash } from 'bcrypt'
+import type { CreateUserDto, LoginUserDto, PayloadDto } from 'src/dto/auth.dto'
 import { PrismaService } from 'src/prisma.service.js'
 
 @Injectable()
@@ -19,7 +20,7 @@ export class AuthService {
 
 		const findByEmail = await this.prisma.user.findUnique({
 			where: {
-				username,
+				email,
 			},
 		})
 
@@ -44,7 +45,7 @@ export class AuthService {
 		return true
 	}
 
-	async createUser(createUser: ICreateUser) {
+	async createUser(createUser: CreateUserDto) {
 		const checkUniq = await this.checkUniq(createUser.email, createUser.username)
 
 		if (checkUniq !== true) {
@@ -62,7 +63,7 @@ export class AuthService {
 		})
 
 		const jwt = this.createJWT({
-			userID: newUser.id,
+			id: newUser.id,
 			username: newUser.username,
 			email: newUser.email,
 		})
@@ -80,7 +81,7 @@ export class AuthService {
 		}
 	}
 
-	async loginUser(loginUser: ILoginUser) {
+	async loginUser(loginUser: LoginUserDto) {
 		const findUser = await this.prisma.user.findUnique({
 			where: {
 				username: loginUser.username,
@@ -108,7 +109,7 @@ export class AuthService {
 		}
 
 		const jwt = this.createJWT({
-			userID: findUser.id,
+			id: findUser.id,
 			username: findUser.username,
 			email: findUser.email,
 		})
@@ -126,7 +127,7 @@ export class AuthService {
 		}
 	}
 
-	createJWT(payload: IPayload) {
+	createJWT(payload: PayloadDto) {
 		return this.jwtService.sign(payload, { secret: 'secret' })
 	}
 
@@ -150,21 +151,4 @@ export class AuthService {
 
 		return data
 	}
-}
-
-interface IPayload {
-	userID: number
-	username: string
-	email: string
-}
-
-export interface ICreateUser {
-	username: string
-	email: string
-	password: string
-}
-
-export interface ILoginUser {
-	username: string
-	password: string
 }

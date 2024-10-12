@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service'
-import type { SendMessageSocket } from './socket.controller'
+import type { SendMessageDto } from 'src/dto/socket.dto'
 
 @Injectable()
 export class SocketService {
 	constructor(private readonly prisma: PrismaService) {}
 	
-	async createMessage(data: SendMessageSocket) {
+	async createMessage(data: SendMessageDto) {
 		const checkUser = this.prisma.checkExistUser(data.senderId)
 		const checkChat = this.prisma.checkExistChat(data.chatId)
 		

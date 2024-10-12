@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common'
 import { JwtModule, JwtService } from '@nestjs/jwt'
-import { AppController } from './app.controller.js'
-import { AppService } from './app.service.js'
 import AuthController from './auth/auth.controller.js'
 import { AuthModule } from './auth/auth.module.js'
 import { AuthService } from './auth/auth.service.js'
@@ -25,7 +23,7 @@ import { ChatsService } from './chats/chats.service.js'
 		ChatsModule, 
 		SocketModule, 
 	],
-	controllers: [AppController, AuthController, ChatsController],
-	providers: [AppService, PrismaService, JwtService, AuthService, ChatsService],
+	controllers: [AuthController, ChatsController],
+	providers: [PrismaService, JwtService, AuthService, ChatsService],
 })
 export class AppModule {}

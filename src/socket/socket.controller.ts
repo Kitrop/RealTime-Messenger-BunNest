@@ -14,7 +14,7 @@ export class SocketController {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly prisma: PrismaService, private readonly socketService: SocketService, private readonly jwtService: JwtService) {}
+  constructor(private readonly socketService: SocketService) {}
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
@@ -37,11 +37,4 @@ export class SocketController {
 			.to(`chat_${dataFromBody.chatId}`)
 			.emit('newMessage', message);
   }
-}
-
-
-export interface SendMessageSocket {
-	chatId: number,
-	content: string,
-	senderId: number
 }
