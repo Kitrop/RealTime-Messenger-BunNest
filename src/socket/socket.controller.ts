@@ -37,24 +37,6 @@ export class SocketController {
 			.to(`chat_${dataFromBody.chatId}`)
 			.emit('newMessage', message);
   }
-
-  @UseGuards(AuthGuard)
-  @Get('chats/:chatId/messages')
-  async getChatMessages(@Param('chatId') chatId: string, @Req() req: Request) {
-    const accessToken = req.cookies['accessToken']
-    const dataJwt = this.jwtService.decode(accessToken)
-    
-    const isAccess = this.socketService.isAccess(+chatId, dataJwt.id)
-
-    if (!isAccess) {
-      throw new BadRequestException('not access to chat')
-    }
-
-    return this.prisma.message.findMany({
-      where: { chatId: parseInt(chatId, 10) },
-      orderBy: { createdAt: 'asc' },
-    });
-  }
 }
 
 

@@ -1,6 +1,7 @@
-import { Body, Controller, Get, InternalServerErrorException, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ChatsService, type CreateChatDto } from './chats.service'
 import type { Request } from 'express'
+import { AuthGuard } from 'src/auth/auth.guard'
 
 @Controller('chats')
 export class ChatsController {
@@ -15,6 +16,15 @@ export class ChatsController {
 		}
 
 		return chat
+	}
+
+	@UseGuards(AuthGuard)
+	@Get(':chatId/messages')
+	async getChatMessages(@Param('chatId') chatId: string, @Req() req: Request) {
+		const accessToken = req.cookies['accessToken']
+		const data = await this.chatService.getMessages({ accessToken, chatId: +chatId})
+
+		return data
 	}
 
 	@Get('all')
