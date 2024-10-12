@@ -13,12 +13,14 @@ export class AuthGuard implements CanActivate {
     const accessToken = request.cookies['accessToken'];
 
     if (!accessToken) {
-      throw new UnauthorizedException('Access denied: No access token provided.');
+      throw new UnauthorizedException('Access denied: No access token provided');
     }
 
     try {
       // Проверяем валидность токена
-      await this.jwtService.verifyAsync(accessToken);
+      await this.jwtService.verifyAsync(accessToken, {
+        secret: 'secret'
+      });
       return true; // Токен валидный, доступ разрешен
     } catch (error) {
       // Если токен невалидный, очищаем куки и выбрасываем исключение

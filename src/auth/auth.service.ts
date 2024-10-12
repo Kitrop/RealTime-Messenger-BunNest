@@ -17,8 +17,6 @@ export class AuthService {
 			},
 		})
 
-		console.log(findByUsername)
-
 		const findByEmail = await this.prisma.user.findUnique({
 			where: {
 				username,

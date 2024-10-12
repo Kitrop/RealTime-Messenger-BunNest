@@ -2,6 +2,7 @@ import { type CanActivate, type ExecutionContext, Injectable, UnauthorizedExcept
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma.service'
 import type { Socket } from 'socket.io';
+import { InvalidDataException } from './error-message.exception'
 
 @Injectable()
 export class AccessGuard implements CanActivate {
@@ -13,19 +14,21 @@ export class AccessGuard implements CanActivate {
     const { senderId, chatId } = data
 
     const token = this.getTokenFromSocket(client)
-
+    
     if (!token) {
-      throw new UnauthorizedException('AccessToken is missing')
+      throw new InvalidDataException('AccessToken is missing');
     }
 
     let decodedToken: any
+
     try {
-      decodedToken = this.jwtService.verify(token, {
+      decodedToken = await this.jwtService.verifyAsync(token, {
 				secret: 'secret'
-			}); 
+			});
     } catch (err) {
-      throw new UnauthorizedException('Invalid token')
+      throw new InvalidDataException('Invalid accessToken');
     }
+
     const userId = decodedToken.id;
 
     if (userId !== senderId) {
@@ -47,22 +50,12 @@ export class AccessGuard implements CanActivate {
   }
 
   private getTokenFromSocket(client: Socket): string | null {
-    const cookies = client.handshake.headers.cookie
+    const token = client.handshake.auth.token
 
-		console.log(client.handshake)
-
-    if (cookies) {
-      const parsedCookies = this.parseCookies(cookies);
-      return parsedCookies['accessToken']
+    if (token) {
+      return token
     }
+    
     return null
-  }
-
-  private parseCookies(cookies: string): { [key: string]: string } {
-    return cookies.split(';').reduce((acc, cookie) => {
-      const [key, value] = cookie.split('=')
-      acc[key.trim()] = value
-      return acc
-    }, {})
   }
 }

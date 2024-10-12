@@ -8,8 +8,6 @@ import { SocketService } from './socket.service'
 import { AccessGuard } from './access.guard'
 import type { Request } from 'express'
 import { JwtService } from '@nestjs/jwt'
-import { log } from 'console'
-import { emit } from 'process'
 
 @WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
@@ -28,14 +26,10 @@ export class SocketController {
   }
 
   @SubscribeMessage('sendMessage')
-  // @UseGuards(AuthGuard)
-  // @UseGuards(AccessGuard)
+  @UseGuards(AccessGuard)
   async handleMessage(@MessageBody() sendMessageDto: string, @ConnectedSocket() client: Socket) {
-
+    
     const dataFromBody = JSON.parse(sendMessageDto);
-    console.log(dataFromBody.senderId);
-    console.log(dataFromBody.chatId);
-    console.log(dataFromBody.content);
     
     const message = this.socketService.createMessage(dataFromBody)
 
