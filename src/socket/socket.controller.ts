@@ -6,6 +6,7 @@ import { SocketService } from './socket.service'
 import { AccessGuard } from './access.guard'
 import { parse } from 'path'
 import { emit } from 'process'
+import { InvalidDataException } from './error-message.exception'
 
 @WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
@@ -38,11 +39,17 @@ export class SocketController {
   @SubscribeMessage('editMessage')
   @UseGuards(AccessGuard)
   async handleEditMessage(@MessageBody() editMessageDto: string, @ConnectedSocket() client: Socket) {
-    const dataFromBody = JSON.parse(editMessageDto);
-    const updatedMessage = await this.socketService.editMessage(dataFromBody);
-    
+    let dataFromBody: any 
+    try {
+      dataFromBody = JSON.parse(editMessageDto)
+    } catch (err) {
+      throw new InvalidDataException('Invalid data body')
+    }
+
+    const updatedMessage = await this.socketService.editMessage(dataFromBody)
+
     client
       .to(`chat_${dataFromBody.chatId}`)
-      .emit('messageUpdated', updatedMessage);
+      .emit('messageUpdated', updatedMessage)
   }
 }

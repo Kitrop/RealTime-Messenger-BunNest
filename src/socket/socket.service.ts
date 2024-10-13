@@ -1,8 +1,5 @@
 import {
-	BadRequestException,
 	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import type { EditMessageDto, SendMessageDto } from 'src/dto/socket.dto'
@@ -17,10 +14,10 @@ export class SocketService {
 		const checkChat = await this.prisma.checkExistChat(data.chatId)
 
 		if (!checkChat) {
-			throw new NotFoundException('chat found')
+			throw new InvalidDataException('chat found')
 		}
 		if (!checkUser) {
-			throw new BadRequestException('sender id invalid, user not found')
+			throw new InvalidDataException('sender id invalid, user not found')
 		}
 
 		const message = await this.prisma.message
@@ -32,7 +29,7 @@ export class SocketService {
 				},
 			})
 			.catch(e => {
-				throw new InternalServerErrorException(e.message)
+				throw new InvalidDataException(e.message)
 			})
 
 		return message
@@ -47,7 +44,7 @@ export class SocketService {
 		})
 
 		if (!chatMember) {
-			throw new BadRequestException('user can not get access for this chat')
+			throw new InvalidDataException('user can not get access for this chat')
 		}
 
 		return true
@@ -61,11 +58,11 @@ export class SocketService {
 		})
 
 		if (!message) {
-			throw new NotFoundException('Message not found')
+			throw new InvalidDataException('Message not found')
 		}
 
 		if (message.senderId !== data.senderId) {
-			throw new BadRequestException('You can only edit your own messages')
+			throw new InvalidDataException('You can only edit your own messages')
 		}
 
 		const updatedMessage = await this.prisma.message.update({

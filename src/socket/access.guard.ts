@@ -11,7 +11,17 @@ export class AccessGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>()
     const data = context.switchToWs().getData()
-    const { senderId, chatId } = data
+    
+    let chatId: number
+    let senderId: number
+
+    try {
+      const parseData = JSON.parse(data)
+      chatId = parseData['chatId']
+      senderId = parseData['senderId']
+    } catch(err) {
+      throw new InvalidDataException('invalid data body')
+    }
 
     const token = this.getTokenFromSocket(client)
     
@@ -30,8 +40,9 @@ export class AccessGuard implements CanActivate {
     }
 
     const userId = decodedToken.id;
-
+    
     if (userId !== senderId) {
+      console.log('zxc');
       return false
     }
 
@@ -43,6 +54,7 @@ export class AccessGuard implements CanActivate {
     });
 
     if (!chatMember) {
+      console.log('123');
       return false
     }
 
