@@ -1,13 +1,9 @@
-import { BadRequestException, Get, Param, Req, UseGuards } from '@nestjs/common'
+import { UseGuards } from '@nestjs/common'
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets'
 import type { Socket } from 'socket.io';
 import { Server } from 'socket.io';
-import { AuthGuard } from 'src/auth/auth.guard'
-import { PrismaService } from 'src/prisma.service'
 import { SocketService } from './socket.service'
 import { AccessGuard } from './access.guard'
-import type { Request } from 'express'
-import { JwtService } from '@nestjs/jwt'
 
 @WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
@@ -29,12 +25,15 @@ export class SocketController {
   @UseGuards(AccessGuard)
   async handleMessage(@MessageBody() sendMessageDto: string, @ConnectedSocket() client: Socket) {
     
+    console.log(sendMessageDto)
     const dataFromBody = JSON.parse(sendMessageDto);
     
-    const message = this.socketService.createMessage(dataFromBody)
+    const message = await this.socketService.createMessage(dataFromBody)
 
     client
 			.to(`chat_${dataFromBody.chatId}`)
 			.emit('newMessage', message);
   }
 }
+
+let str = '{"numStr":2,"str":"hi"}'

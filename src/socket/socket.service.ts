@@ -7,8 +7,8 @@ export class SocketService {
 	constructor(private readonly prisma: PrismaService) {}
 	
 	async createMessage(data: SendMessageDto) {
-		const checkUser = this.prisma.checkExistUser(data.senderId)
-		const checkChat = this.prisma.checkExistChat(data.chatId)
+		const checkUser = await this.prisma.checkExistUser(data.senderId)
+		const checkChat = await this.prisma.checkExistChat(data.chatId)
 		
 		if (!checkChat) {
 			throw new NotFoundException('chat found')
