@@ -4,6 +4,8 @@ import type { Socket } from 'socket.io';
 import { Server } from 'socket.io';
 import { SocketService } from './socket.service'
 import { AccessGuard } from './access.guard'
+import { parse } from 'path'
+import { emit } from 'process'
 
 @WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
@@ -24,9 +26,7 @@ export class SocketController {
   @SubscribeMessage('sendMessage')
   @UseGuards(AccessGuard)
   async handleMessage(@MessageBody() sendMessageDto: string, @ConnectedSocket() client: Socket) {
-    
-    console.log(sendMessageDto)
-    const dataFromBody = JSON.parse(sendMessageDto);
+    const dataFromBody = JSON.parse(sendMessageDto)
     
     const message = await this.socketService.createMessage(dataFromBody)
 
@@ -34,6 +34,15 @@ export class SocketController {
 			.to(`chat_${dataFromBody.chatId}`)
 			.emit('newMessage', message);
   }
-}
 
-let str = '{"numStr":2,"str":"hi"}'
+  @SubscribeMessage('editMessage')
+  @UseGuards(AccessGuard)
+  async handleEditMessage(@MessageBody() editMessageDto: string, @ConnectedSocket() client: Socket) {
+    const dataFromBody = JSON.parse(editMessageDto);
+    const updatedMessage = await this.socketService.editMessage(dataFromBody);
+    
+    client
+      .to(`chat_${dataFromBody.chatId}`)
+      .emit('messageUpdated', updatedMessage);
+  }
+}
