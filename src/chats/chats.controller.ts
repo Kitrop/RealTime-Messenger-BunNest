@@ -1,7 +1,8 @@
 import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { ChatsService, type CreateChatDto } from './chats.service'
+import { ChatsService } from './chats.service'
 import type { Request } from 'express'
 import { AuthGuard } from 'src/auth/auth.guard'
+import type { CreateChatDto } from 'src/dto/chat.dto'
 
 @Controller('chats')
 export class ChatsController {
