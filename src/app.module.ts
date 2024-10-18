@@ -9,6 +9,7 @@ import { SocketModule } from './socket/socket.module';
 import { ChatsController } from './chats/chats.controller.js'
 import { ConfigModule } from '@nestjs/config'
 import { ChatsService } from './chats/chats.service.js'
+import { PostsModule } from './posts/posts.module';
 
 @Module({
 	imports: [
@@ -21,7 +22,7 @@ import { ChatsService } from './chats/chats.service.js'
     }),
 		AuthModule, 
 		ChatsModule, 
-		SocketModule, 
+		SocketModule, PostsModule, 
 	],
 	controllers: [AuthController, ChatsController],
 	providers: [PrismaService, JwtService, AuthService, ChatsService],

@@ -2,23 +2,21 @@ import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/com
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma.service'
 import type { Socket } from 'socket.io';
-import { InvalidDataException } from './error-message.exception'
+import { InvalidDataException } from 'src/socket/error-message.exception'
 
 @Injectable()
-export class AccessGuard implements CanActivate {
+export class PostsGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>()
     const data = context.switchToWs().getData()
     
-    let chatId: number
-    let senderId: number
+    let authorId: number
 
     try {
       const parseData = JSON.parse(data)
-      chatId = parseData['chatId']
-      senderId = parseData['senderId']
+      authorId = parseData['chatId']
     } catch(err) {
       throw new InvalidDataException('invalid data body')
     }
@@ -41,18 +39,17 @@ export class AccessGuard implements CanActivate {
 
     const userId = decodedToken.id;
     
-    if (userId !== senderId) {
+    if (userId !== authorId) {
       return false
     }
 
-    const chatMember = await this.prisma.chatMember.findFirst({
+    const user = await this.prisma.user.findUnique({
       where: {
-        userId: userId,
-        chatId: chatId,
+				id: authorId
       },
     });
 
-    if (!chatMember) {
+    if (!user) {
       return false
     }
 
