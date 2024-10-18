@@ -2,7 +2,7 @@ import {
 	Injectable,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
-import type { EditMessageDto, SendMessageDto } from 'src/dto/socket.dto'
+import type { DeleteMessageDto, EditMessageDto, SendMessageDto } from 'src/dto/socket.dto'
 import { InvalidDataException } from './error-message.exception'
 
 @Injectable()
@@ -71,5 +71,34 @@ export class SocketService {
 		})
 
 		return updatedMessage
+	}
+
+	async deleteMessage(data: DeleteMessageDto) {
+		const findMessage = await this.prisma.message.findUnique({
+			where: {
+				id: data.messageId
+			}
+		})
+
+		if (!findMessage) {
+			throw new InvalidDataException('Message not found')
+		}
+
+		if (findMessage.senderId !== data.senderId) {
+			throw new InvalidDataException('You can only delete your own messages'	)
+		}
+
+		const deletedMessage = await this.prisma.message.delete({
+			where: {
+				id: data.messageId,
+				chatId: data.chatId
+			}
+		})
+
+		if (!deletedMessage) {
+			throw new InvalidDataException('delete error')
+		}
+
+		return deletedMessage
 	}
 }

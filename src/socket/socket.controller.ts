@@ -7,6 +7,7 @@ import { AccessGuard } from './access.guard'
 import { parse } from 'path'
 import { emit } from 'process'
 import { InvalidDataException } from './error-message.exception'
+import { DeleteMessageDto, EditMessageDto, SendMessageDto } from 'src/dto/socket.dto'
 
 @WebSocketGateway({ cors: '*', credentials: true, })
 export class SocketController {
@@ -27,8 +28,13 @@ export class SocketController {
   @SubscribeMessage('sendMessage')
   @UseGuards(AccessGuard)
   async handleMessage(@MessageBody() sendMessageDto: string, @ConnectedSocket() client: Socket) {
-    const dataFromBody = JSON.parse(sendMessageDto)
-    
+    let dataFromBody: SendMessageDto
+    try {
+      dataFromBody = JSON.parse(sendMessageDto)
+    } catch (err) {
+      throw new InvalidDataException(err.message)
+    }
+  
     const message = await this.socketService.createMessage(dataFromBody)
 
     client
@@ -39,7 +45,8 @@ export class SocketController {
   @SubscribeMessage('editMessage')
   @UseGuards(AccessGuard)
   async handleEditMessage(@MessageBody() editMessageDto: string, @ConnectedSocket() client: Socket) {
-    let dataFromBody: any 
+    let dataFromBody: EditMessageDto 
+    
     try {
       dataFromBody = JSON.parse(editMessageDto)
     } catch (err) {
@@ -51,5 +58,23 @@ export class SocketController {
     client
       .to(`chat_${dataFromBody.chatId}`)
       .emit('messageUpdated', updatedMessage)
+  }
+
+  @SubscribeMessage('deleteMessage')
+  @UseGuards(AccessGuard)
+  async handleDeleteMessage(@MessageBody() deleteMessageDto: string, @ConnectedSocket() client: Socket) {
+    let dataFromBody: DeleteMessageDto
+
+    try {
+      dataFromBody = JSON.parse(deleteMessageDto)
+    } catch (err) {
+      throw new InvalidDataException('Invalid data body')
+    }
+
+    const updatedMessage = await this.socketService.deleteMessage(dataFromBody)
+
+    client
+      .to(`chat_${dataFromBody.chatId}`)
+      .emit('messageDelete', updatedMessage)
   }
 }

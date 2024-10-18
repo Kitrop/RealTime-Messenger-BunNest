@@ -39,3 +39,17 @@ export class EditMessageDto {
 	@IsPositive()
 	chatId: number
 }
+
+export class DeleteMessageDto {
+	@IsNumber()
+	@IsPositive()
+	messageId: number
+	
+	@IsNumber()
+	@IsPositive()
+	senderId: number
+
+	@IsNumber()
+	@IsPositive()
+	chatId: number
+}
