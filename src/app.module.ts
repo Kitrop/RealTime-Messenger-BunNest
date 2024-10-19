@@ -10,6 +10,10 @@ import { ChatsController } from './chats/chats.controller.js'
 import { ConfigModule } from '@nestjs/config'
 import { ChatsService } from './chats/chats.service.js'
 import { PostsModule } from './posts/posts.module';
+import { type ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo'
+import { GraphQLModule } from '@nestjs/graphql'
+import { join } from 'path'
+import { cwd } from 'process'
 
 @Module({
 	imports: [
@@ -19,6 +23,10 @@ import { PostsModule } from './posts/posts.module';
       signOptions: {
         expiresIn: '300h',
       },
+    }),
+		GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+			autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
 		AuthModule, 
 		ChatsModule, 

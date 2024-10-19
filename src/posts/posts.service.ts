@@ -72,7 +72,13 @@ export class PostsService {
 
   async getPosts() {
     return this.prisma.post.findMany({
-      include: { author: true },
+      include: {
+        author: {
+          select: {
+            username: true
+          }
+        }
+      },
     })
   }
 }

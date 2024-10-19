@@ -7,6 +7,20 @@ export class PostsController {
 
 	@Get('posts')
 	async getAllPosts() {
-		return await this.postService.getPosts()
+		const data: AllPosts[] = await this.postService.getPosts()
+		return data
 	}
+}
+
+interface AllPosts {
+	author: Author
+	id: number,
+	content: string,
+	authorId: number,
+	createdAt: Date,
+	updatedAt: Date
+}
+
+interface Author {
+	username: string
 }
