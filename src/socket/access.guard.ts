@@ -3,10 +3,15 @@ import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma.service'
 import type { Socket } from 'socket.io';
 import { InvalidDataException } from './error-message.exception'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AccessGuard implements CanActivate {
-  constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly prisma: PrismaService, 
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>()
@@ -33,7 +38,7 @@ export class AccessGuard implements CanActivate {
 
     try {
       decodedToken = await this.jwtService.verifyAsync(token, {
-				secret: 'secret'
+				secret: this.configService.get('SECRET_KEY')
 			})
     } catch (err) {
       throw new InvalidDataException('Invalid accessToken');

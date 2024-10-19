@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { compare, hash } from 'bcrypt'
 import type { CreateUserDto, LoginUserDto, PayloadDto } from 'src/dto/auth.dto'
@@ -8,7 +9,8 @@ import { PrismaService } from 'src/prisma.service.js'
 export class AuthService {
 	constructor(
 		private readonly jwtService: JwtService,
-		private readonly prisma: PrismaService
+		private readonly prisma: PrismaService,
+		private readonly configService: ConfigService
 	) {}
 
 	async checkUniq(email: string, username: string) {
@@ -128,12 +130,12 @@ export class AuthService {
 	}
 
 	createJWT(payload: PayloadDto) {
-		return this.jwtService.sign(payload, { secret: 'secret' })
+		return this.jwtService.sign(payload, { secret: this.configService.get('SECRET_KEY') })
 	}
 
 	verifyJWT(jwt: string): boolean {
 		try {
-			this.jwtService.verify(jwt, { secret: 'secret' })
+			this.jwtService.verify(jwt, { secret: this.configService.get('SECRET_KEY') })
 			return true
 		} catch (e) {
 			return false

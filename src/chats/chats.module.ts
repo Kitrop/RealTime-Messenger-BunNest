@@ -9,7 +9,7 @@ import { PrismaService } from 'src/prisma.service'
   imports: [   
 		ConfigModule.forRoot(),
 		JwtModule.register({
-      secret: 'secret',
+      secret: process.env.SECRET_KEY,
       signOptions: {
         expiresIn: '300h',
       },

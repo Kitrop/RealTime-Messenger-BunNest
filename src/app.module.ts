@@ -13,7 +13,6 @@ import { PostsModule } from './posts/posts.module';
 import { type ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo'
 import { GraphQLModule } from '@nestjs/graphql'
 import { join } from 'path'
-import { cwd } from 'process'
 
 @Module({
 	imports: [
@@ -28,6 +27,9 @@ import { cwd } from 'process'
       driver: ApolloDriver,
 			autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
+		ConfigModule.forRoot({
+			isGlobal: true
+		}),
 		AuthModule, 
 		ChatsModule, 
 		SocketModule, PostsModule, 

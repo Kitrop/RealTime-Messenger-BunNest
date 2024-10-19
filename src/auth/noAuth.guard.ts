@@ -4,12 +4,13 @@ import {
 	Injectable,
 	ForbiddenException,
 } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import type { Request, Response } from 'express'
 
 @Injectable()
 export class NoAuthGuard implements CanActivate {
-	constructor(private readonly jwtService: JwtService) {}
+	constructor(private readonly jwtService: JwtService, private readonly configService: ConfigService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request: Request = context.switchToHttp().getRequest()
@@ -23,7 +24,8 @@ export class NoAuthGuard implements CanActivate {
 		}
 
 		// Проверяем валидность токена
-		const data = await this.jwtService.verifyAsync(accessToken, { secret: 'secret' })
+		const data = await this.jwtService.verifyAsync(accessToken, 
+			{ secret: this.configService.get('SECRET_KEY') })
       .catch(err => {
         console.log("1");
         response.clearCookie('accessToken')
