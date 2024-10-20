@@ -2,6 +2,33 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Message {
+  id: Int!
+  content: String!
+  senderId: Int!
+  chatId: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Chat {
+  id: Int!
+  name: String
+  isGroup: Boolean!
+  members: [ChatMember!]!
+  messages: [Message!]!
+}
+
+type ChatMember {
+  userId: Int!
+  joinedAt: DateTime!
+}
+
 type Author {
   username: String!
 }
@@ -15,11 +42,16 @@ type AllPosts {
   author: Author!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type Query {
+  getChatMessages(chatId: Float!): [Message!]!
   getAllPosts: [AllPosts!]!
+}
+
+type Mutation {
+  createChat(createChatInput: CreateChatInput!): Chat!
+}
+
+input CreateChatInput {
+  name: String
+  members: [Int!]!
 }

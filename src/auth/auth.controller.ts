@@ -3,10 +3,9 @@ import type { Response } from 'express'
 import { AuthGuard } from './auth.guard.js'
 import {
   AuthService,
-  type ICreateUser,
-  type ILoginUser,
 } from './auth.service.js'
 import { NoAuthGuard } from './noAuth.guard.js'
+import type { CreateUserDto, LoginUserDto } from 'src/dto/auth.dto.js'
 
 @Controller('auth')
 export default class AuthController {
@@ -15,7 +14,7 @@ export default class AuthController {
 	@UseGuards(NoAuthGuard)
 	@Post('signUp')
 	async createUser(
-		@Body() createUser: ICreateUser,
+		@Body() createUser: CreateUserDto,
 		@Res() res: Response
 	) {
 		const result = await this.authService.createUser(createUser)
@@ -31,7 +30,7 @@ export default class AuthController {
 	@UseGuards(NoAuthGuard)
 	@Post('signIn')
 	async loginUser(
-		@Body() loginUser: ILoginUser,
+		@Body() loginUser: LoginUserDto,
 		@Res() res: Response
 	) {
 		const result = await this.authService.loginUser(loginUser)
@@ -49,10 +48,5 @@ export default class AuthController {
 	async logoutUser(@Res() res: Response) {
 		res.clearCookie('accessToken')
 		res.status(204).send()
-	}
-
-	@Get('all')
-	all() {
-		return this.authService.allUsers()
 	}
 }

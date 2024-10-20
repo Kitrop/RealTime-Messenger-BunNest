@@ -8,6 +8,7 @@ import type { CreateChatDto } from 'src/dto/chat.dto'
 export class ChatsController {
 	constructor(private readonly chatService: ChatsService) {}
 
+	@UseGuards(AuthGuard)
 	@Post('chat')
 	async createChat(@Body() body: CreateChatDto, @Req() req: Request) {
 		const chat = await this.chatService.createChat(body)
@@ -17,20 +18,5 @@ export class ChatsController {
 		}
 
 		return chat
-	}
-
-	@UseGuards(AuthGuard)
-	@Get(':chatId/messages')
-	async getChatMessages(@Param('chatId') chatId: string, @Req() req: Request) {
-		const accessToken = req.cookies['accessToken']
-		const data = await this.chatService.getMessages({ accessToken, chatId: +chatId})
-
-		return data
-	}
-
-	@Get('all')
-	async all() {
-		const data = await this.chatService.allMessages()
-		return data
 	}
 }

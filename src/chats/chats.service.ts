@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt'
+import { log } from 'console'
 import type { CreateChatDto, GetMessageDto } from 'src/dto/chat.dto'
 import { PrismaService } from 'src/prisma.service'
 
@@ -30,6 +31,7 @@ export class ChatsService {
 
 	async getMessages(getMessage: GetMessageDto) {
 		const dataJwt = this.jwtService.decode(getMessage.accessToken)
+		log(dataJwt)
 		const isAccess = await this.isAccess(getMessage.chatId, dataJwt.id)
 
 		if (!isAccess) {

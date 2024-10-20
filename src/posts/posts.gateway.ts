@@ -73,7 +73,7 @@ export class PostsGateway {
 			throw new InvalidDataException(err.message)
 		}
 
-    const deletedPost = await this.postsService.createPost(bodyParse);
+    const deletedPost = await this.postsService.deletePost(bodyParse);
 
 		client
 			.emit('deletePost', deletedPost)

@@ -4,6 +4,7 @@ import { ChatsService } from './chats.service';
 import { ConfigModule } from '@nestjs/config'
 import { JwtModule, JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma.service'
+import { ChatsResolver } from './chats.resolver'
 
 @Module({
   imports: [   
@@ -16,7 +17,7 @@ import { PrismaService } from 'src/prisma.service'
     }),
 	],
   controllers: [ChatsController],
-  providers: [ChatsService, JwtService, PrismaService]
+  providers: [ChatsService, JwtService, PrismaService, ChatsResolver]
 })
 
 export class ChatsModule {}
